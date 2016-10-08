@@ -1,5 +1,6 @@
 # deezer-desktop 
-Windows client for Deezer
+Windows client for Deezer  
+This is quite literally a basic Form using CefSharp to wrap the website. Basic code to change title when the browser's title changes but no mediakeys or anything else special yet. You might have to install the standalone version of Flash for this to work.
 
 
 ## License 
