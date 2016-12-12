@@ -59,5 +59,38 @@ namespace Deezer_Desktop
         {
             Console.WriteLine(e.KeyCode.ToString());
         }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            if (FormWindowState.Minimized == this.WindowState)
+            {
+                notifyIcon1.Visible = true;
+                //notifyIcon1.ShowBalloonTip(500);
+                this.Hide();
+            }
+
+            else if (FormWindowState.Normal == this.WindowState)
+            {
+                notifyIcon1.Visible = false;
+            }
+        }
+
+        private void Form1_DoubleClick(object sender, EventArgs e)
+        {
+        }
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            this.Show();
+            var bounds = this.MaximizedBounds;
+            this.Size = new Size(bounds.Width, bounds.Height);
+            this.BringToFront();
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Program.mutex.ReleaseMutex();
+            Environment.Exit(1);
+        }
     }
 }
