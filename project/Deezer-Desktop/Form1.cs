@@ -64,14 +64,8 @@ namespace Deezer_Desktop
         {
             if (FormWindowState.Minimized == this.WindowState)
             {
-                notifyIcon1.Visible = true;
                 //notifyIcon1.ShowBalloonTip(500);
                 this.Hide();
-            }
-
-            else if (FormWindowState.Normal == this.WindowState)
-            {
-                notifyIcon1.Visible = false;
             }
         }
 
@@ -82,15 +76,34 @@ namespace Deezer_Desktop
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             this.Show();
-            var bounds = this.MaximizedBounds;
-            this.Size = new Size(bounds.Width, bounds.Height);
+            /*var bounds = this.MaximizedBounds;
+            this.Size = new Size(bounds.Width, bounds.Height);*/
+            this.WindowState = FormWindowState.Maximized;
+            this.TopMost = true;
             this.BringToFront();
+
+            this.TopMost = false;
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Program.mutex.ReleaseMutex();
-            Environment.Exit(1);
+            try
+            {
+                Program.mutex.ReleaseMutex();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Mutex release failed");
+            }
+            finally
+            {
+                Console.WriteLine("Mutex release worked");
+            }
+        }
+
+        private void skipSongToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            chromeBrowser.ExecuteScriptAsync(@"$('.control-next').click();");
         }
     }
 }
