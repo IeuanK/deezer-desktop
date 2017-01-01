@@ -105,5 +105,10 @@ namespace Deezer_Desktop
         {
             chromeBrowser.ExecuteScriptAsync(@"$('.control-next').click();");
         }
+
+        private void playPauseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            chromeBrowser.ExecuteScriptAsync(@"$('.control-play').click();");
+        }
     }
 }

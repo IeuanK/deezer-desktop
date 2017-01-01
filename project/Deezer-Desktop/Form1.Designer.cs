@@ -33,6 +33,7 @@
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.skipSongToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.playPauseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -48,16 +49,24 @@
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.skipSongToolStripMenuItem});
+            this.skipSongToolStripMenuItem,
+            this.playPauseToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(126, 26);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 70);
             // 
             // skipSongToolStripMenuItem
             // 
             this.skipSongToolStripMenuItem.Name = "skipSongToolStripMenuItem";
-            this.skipSongToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.skipSongToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.skipSongToolStripMenuItem.Text = "Skip song";
             this.skipSongToolStripMenuItem.Click += new System.EventHandler(this.skipSongToolStripMenuItem_Click);
+            // 
+            // playPauseToolStripMenuItem
+            // 
+            this.playPauseToolStripMenuItem.Name = "playPauseToolStripMenuItem";
+            this.playPauseToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.playPauseToolStripMenuItem.Text = "Play/Pause";
+            this.playPauseToolStripMenuItem.Click += new System.EventHandler(this.playPauseToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -85,6 +94,7 @@
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem skipSongToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem playPauseToolStripMenuItem;
     }
 }
 
