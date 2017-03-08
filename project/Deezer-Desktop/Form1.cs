@@ -71,7 +71,7 @@ namespace Deezer_Desktop
                 if(!initialized || initializedURL != chromeBrowser.Address)
                 {
                     Console.WriteLine("Frame load end; "+ chromeBrowser.Address);
-                    chromeBrowser.ShowDevTools();
+                    //chromeBrowser.ShowDevTools();
                     //chromeBrowser.ExecuteScriptAsync(@"$('.control-play').on('click', function() { clickCallback.clickCallback(); });");
                     //chromeBrowser.ExecuteScriptAsync(@"$('.icon-play').on('click', function() { clickCallback.clickCallback(); });");
                     //chromeBrowser.ExecuteScriptAsync(@"$('.btn-play').on('click', function() { clickCallback.clickCallback(); });");
