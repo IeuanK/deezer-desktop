@@ -1,13 +1,10 @@
 ﻿using CefSharp;
 using CefSharp.WinForms;
+using ManagedWinapi;
+using ManagedWinapi.Hooks;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,6 +14,11 @@ namespace Deezer_Desktop
     {
         public ChromiumWebBrowser chromeBrowser;
         public string title;
+        public Hook hook;
+        public Hotkey hotkey;
+        public PlayingState state = PlayingState.NONE;
+        public bool initialized = false;
+        public string initializedURL = "";
 
         public Form1()
         {
@@ -25,14 +27,151 @@ namespace Deezer_Desktop
             settings.CachePath = Path.Combine(Path.GetTempPath(), "Deezer-Desktop");
             Cef.Initialize(settings);
             chromeBrowser = new ChromiumWebBrowser("https://deezer.com/");
+            chromeBrowser.RegisterJsObject("clickCallback", new BoundObject(this));
             //chromeBrowser = new ChromiumWebBrowser("chrome://flags");
             this.Controls.Add(chromeBrowser);
             chromeBrowser.Dock = DockStyle.Fill;
 
             chromeBrowser.LoadingStateChanged += ChromeBrowser_LoadingStateChanged;
             chromeBrowser.TitleChanged += ChromeBrowser_TitleChanged;
+            //chromeBrowser.KeyboardHandler = new KeyboardHandler(this);
+
+            /*this.hook = new ManagedWinapi.Hooks.Hook();
+            hook.Type = ManagedWinapi.Hooks.HookType.WH_KEYBOARD;
+            hook.Callback += new Hook.HookCallback(keyboardHook);
+
+
+            hotkey = new ManagedWinapi.Hotkey();
+            hotkey.WindowsKey = true;
+            hotkey.KeyCode = System.Windows.Forms.Keys.Space;
+            hotkey.HotkeyPressed += new EventHandler(hotkey_HotkeyPressed);
+            try
+            {
+                hotkey.Enabled = true;
+            }
+            catch (ManagedWinapi.HotkeyAlreadyInUseException)
+            {
+                MessageBox.Show("Could not register hotkey (already in use).", "Error");
+            }*/
+
+            chromeBrowser.FrameLoadEnd += ChromeBrowser_FrameLoadEnd;
+
+            MouseDownFilter mouseFilter = new MouseDownFilter(this);
+            mouseFilter.FormClicked += MouseFilter_FormClicked;
+            Application.AddMessageFilter(mouseFilter);
+
 
             InitializeComponent();
+        }
+
+        private void ChromeBrowser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
+        {
+            try
+            {
+                if(!initialized || initializedURL != chromeBrowser.Address)
+                {
+                    Console.WriteLine("Frame load end; "+ chromeBrowser.Address);
+                    chromeBrowser.ShowDevTools();
+                    //chromeBrowser.ExecuteScriptAsync(@"$('.control-play').on('click', function() { clickCallback.clickCallback(); });");
+                    //chromeBrowser.ExecuteScriptAsync(@"$('.icon-play').on('click', function() { clickCallback.clickCallback(); });");
+                    //chromeBrowser.ExecuteScriptAsync(@"$('.btn-play').on('click', function() { clickCallback.clickCallback(); });");
+                    chromeBrowser.ExecuteScriptAsync(@"$(document).on('click', function() { clickCallback.clickCallback(); });");
+                    initialized = true;
+                    initializedURL = chromeBrowser.Address;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+            }
+        }
+
+        private void MouseFilter_FormClicked(object sender, EventArgs e)
+        {
+            grabPlayingState();
+        }
+
+        public void fixState()
+        {
+            if(InvokeRequired)
+            {
+                Invoke(new Action(fixState));
+                return;
+            }
+
+            this.grabPlayingState();
+        }
+
+        private void updateNotifyIcon()
+        {
+            switch(state)
+            {
+                case PlayingState.PLAYING:
+                    Console.WriteLine("Setting icon to playing");
+                    notifyIcon1.Icon = notifyIcon_playing.Icon;
+                    break;
+                case PlayingState.PAUSED:
+                    Console.WriteLine("Setting icon to paused");
+                    notifyIcon1.Icon = notifyIcon_paused.Icon;
+                    break;
+                case PlayingState.NONE:
+                    Console.WriteLine("Setting icon to none");
+                    notifyIcon1.Icon = notifyIcon_none.Icon;
+                    break;
+                default:
+                    Console.WriteLine("Setting icon to none");
+                    notifyIcon1.Icon = notifyIcon_none.Icon;
+                    break;
+            }
+        }
+
+        public void grabPlayingState()
+        {
+            Task<JavascriptResponse> task = chromeBrowser.EvaluateScriptAsync("dzPlayer.isPlaying()");
+
+            task.ContinueWith(t =>
+            {
+                if (!t.IsFaulted)
+                {
+                    var response = t.Result;
+                    var jsResult = response.Success ? (response.Result ?? "null") : response.Message;
+
+                    Boolean playing;
+                    if(Boolean.TryParse(jsResult.ToString(), out playing))
+                    {
+                        if(playing)
+                        {
+                            Console.WriteLine("Setting state to playing");
+                            state = PlayingState.PLAYING;
+                        } else
+                        {
+                            Console.WriteLine("Setting state to paused");
+                            state = PlayingState.PAUSED;
+                        }
+                    } else
+                    {
+                        Console.WriteLine("Setting state to none");
+                        state = PlayingState.NONE;
+                    }
+                    updateNotifyIcon();
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void hotkey_HotkeyPressed(object sender, EventArgs e)
+        {
+            Console.WriteLine("Hotkey triggered");
+        }
+
+        private int keyboardHook(int code, IntPtr wParam, IntPtr lParam, ref bool callNext)
+        {
+            if(code > 0)
+            {
+                Console.WriteLine("Keyboard hook:");
+                Console.WriteLine("code: " + code + ", wParam: " + wParam.ToString() + ", lParam: " + lParam.ToString());
+            }
+            return code;
         }
 
         private void ChromeBrowser_TitleChanged(object sender, TitleChangedEventArgs e)
@@ -91,7 +230,7 @@ namespace Deezer_Desktop
             {
                 Program.mutex.ReleaseMutex();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.WriteLine("Mutex release failed");
             }
@@ -104,11 +243,108 @@ namespace Deezer_Desktop
         private void skipSongToolStripMenuItem_Click(object sender, EventArgs e)
         {
             chromeBrowser.ExecuteScriptAsync(@"$('.control-next').click();");
+            grabPlayingState();
         }
 
         private void playPauseToolStripMenuItem_Click(object sender, EventArgs e)
         {
             chromeBrowser.ExecuteScriptAsync(@"$('.control-play').click();");
+            grabPlayingState();
+        }
+
+        private void exitProgramToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(e.Button == MouseButtons.Left)
+            {
+                chromeBrowser.ExecuteScriptAsync(@"$('.control-play').click();");
+                grabPlayingState();
+            }
+        }
+    }
+
+    public class KeyboardHandler : IKeyboardHandler
+    {
+        Form1 form;
+
+        public KeyboardHandler(Form1 form)
+        {
+            this.form = form;
+        }
+        public bool OnKeyEvent(IWebBrowser browserControl, IBrowser browser, KeyType type, int windowsKeyCode, int nativeKeyCode, CefEventFlags modifiers, bool isSystemKey)
+        {
+            Console.WriteLine("browser_keyevent: {\"type\": " + type.ToString() + ",\"windowsKeyCode\": " + windowsKeyCode.ToString() + ",\"nativeKeyCode\": " + nativeKeyCode.ToString() + ",\"isSystemKey\": " + isSystemKey.ToString() + "}");
+            return true;
+        }
+
+        public bool OnPreKeyEvent(IWebBrowser browserControl, IBrowser browser, KeyType type, int windowsKeyCode, int nativeKeyCode, CefEventFlags modifiers, bool isSystemKey, ref bool isKeyboardShortcut)
+        {
+            Console.WriteLine("browser_prekeyevent: {\"type\": " + type.ToString() + ",\"windowsKeyCode\": " + windowsKeyCode.ToString() + ",\"nativeKeyCode\": " + nativeKeyCode.ToString() + ",\"isSystemKey\": " + isSystemKey.ToString() + "}");
+            return true;
+        }
+    }
+
+    public enum PlayingState
+    {
+        NONE,
+        PLAYING,
+        PAUSED
+    }
+
+    public class MouseDownFilter : IMessageFilter
+    {
+        public event EventHandler FormClicked;
+        private int WM_LBUTTONDOWN = 0x201;
+        private Form form = null;
+
+        [DllImport("user32.dll")]
+        public static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
+
+        public MouseDownFilter(Form f)
+        {
+            form = f;
+        }
+
+        public bool PreFilterMessage(ref Message m)
+        {
+            if (m.Msg == WM_LBUTTONDOWN)
+            {
+                if (Form.ActiveForm != null && Form.ActiveForm.Equals(form))
+                {
+                    OnFormClicked();
+                }
+            }
+            return false;
+        }
+
+        protected void OnFormClicked()
+        {
+            if (FormClicked != null)
+            {
+                FormClicked(form, EventArgs.Empty);
+            }
+        }
+    }
+
+    public class BoundObject
+    {
+        private Form1 form;
+        public BoundObject(Form1 form)
+        {
+            this.form = form;
+        }
+
+        public void clickCallback()
+        {
+            Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(250);
+                form.fixState();
+            });
         }
     }
 }

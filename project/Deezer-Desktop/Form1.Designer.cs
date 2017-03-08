@@ -34,6 +34,10 @@
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.skipSongToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playPauseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notifyIcon_paused = new System.Windows.Forms.NotifyIcon(this.components);
+            this.notifyIcon_playing = new System.Windows.Forms.NotifyIcon(this.components);
+            this.notifyIcon_none = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -44,29 +48,53 @@
             this.notifyIcon1.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon1.Icon")));
             this.notifyIcon1.Text = "Deezer Desktop";
             this.notifyIcon1.Visible = true;
+            this.notifyIcon1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseClick);
             this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
             // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.skipSongToolStripMenuItem,
-            this.playPauseToolStripMenuItem});
+            this.playPauseToolStripMenuItem,
+            this.exitProgramToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(142, 70);
             // 
             // skipSongToolStripMenuItem
             // 
             this.skipSongToolStripMenuItem.Name = "skipSongToolStripMenuItem";
-            this.skipSongToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.skipSongToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.skipSongToolStripMenuItem.Text = "Skip song";
             this.skipSongToolStripMenuItem.Click += new System.EventHandler(this.skipSongToolStripMenuItem_Click);
             // 
             // playPauseToolStripMenuItem
             // 
             this.playPauseToolStripMenuItem.Name = "playPauseToolStripMenuItem";
-            this.playPauseToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.playPauseToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.playPauseToolStripMenuItem.Text = "Play/Pause";
             this.playPauseToolStripMenuItem.Click += new System.EventHandler(this.playPauseToolStripMenuItem_Click);
+            // 
+            // exitProgramToolStripMenuItem
+            // 
+            this.exitProgramToolStripMenuItem.Name = "exitProgramToolStripMenuItem";
+            this.exitProgramToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.exitProgramToolStripMenuItem.Text = "Exit Program";
+            this.exitProgramToolStripMenuItem.Click += new System.EventHandler(this.exitProgramToolStripMenuItem_Click);
+            // 
+            // notifyIcon_paused
+            // 
+            this.notifyIcon_paused.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon_paused.Icon")));
+            this.notifyIcon_paused.Text = "notifyIcon2";
+            // 
+            // notifyIcon_playing
+            // 
+            this.notifyIcon_playing.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon_playing.Icon")));
+            this.notifyIcon_playing.Text = "notifyIcon2";
+            // 
+            // notifyIcon_none
+            // 
+            this.notifyIcon_none.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon_none.Icon")));
+            this.notifyIcon_none.Text = "notifyIcon2";
             // 
             // Form1
             // 
@@ -95,6 +123,10 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem skipSongToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem playPauseToolStripMenuItem;
+        private System.Windows.Forms.NotifyIcon notifyIcon_paused;
+        private System.Windows.Forms.NotifyIcon notifyIcon_playing;
+        private System.Windows.Forms.ToolStripMenuItem exitProgramToolStripMenuItem;
+        private System.Windows.Forms.NotifyIcon notifyIcon_none;
     }
 }
 
