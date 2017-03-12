@@ -1,7 +1,5 @@
 ﻿using CefSharp;
 using CefSharp.WinForms;
-using ManagedWinapi;
-using ManagedWinapi.Hooks;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -14,8 +12,7 @@ namespace Deezer_Desktop
     {
         public ChromiumWebBrowser chromeBrowser;
         public string title;
-        public Hook hook;
-        public Hotkey hotkey;
+        private KeyHook keyHook;
         public PlayingState state = PlayingState.NONE;
         public bool initialized = false;
         public string initializedURL = "";
@@ -34,27 +31,12 @@ namespace Deezer_Desktop
 
             chromeBrowser.LoadingStateChanged += ChromeBrowser_LoadingStateChanged;
             chromeBrowser.TitleChanged += ChromeBrowser_TitleChanged;
-            //chromeBrowser.KeyboardHandler = new KeyboardHandler(this);
-
-            /*this.hook = new ManagedWinapi.Hooks.Hook();
-            hook.Type = ManagedWinapi.Hooks.HookType.WH_KEYBOARD;
-            hook.Callback += new Hook.HookCallback(keyboardHook);
-
-
-            hotkey = new ManagedWinapi.Hotkey();
-            hotkey.WindowsKey = true;
-            hotkey.KeyCode = System.Windows.Forms.Keys.Space;
-            hotkey.HotkeyPressed += new EventHandler(hotkey_HotkeyPressed);
-            try
-            {
-                hotkey.Enabled = true;
-            }
-            catch (ManagedWinapi.HotkeyAlreadyInUseException)
-            {
-                MessageBox.Show("Could not register hotkey (already in use).", "Error");
-            }*/
-
             chromeBrowser.FrameLoadEnd += ChromeBrowser_FrameLoadEnd;
+
+            keyHook = new KeyHook();
+            keyHook.KeyHook_Mode = KeyHook.KeyHook_Modes.Hooks;
+            keyHook.VKCodeUp += KeyHook_VKCodeUp;
+            keyHook.Enabled = true;
 
             MouseDownFilter mouseFilter = new MouseDownFilter(this);
             mouseFilter.FormClicked += MouseFilter_FormClicked;
@@ -62,6 +44,26 @@ namespace Deezer_Desktop
 
 
             InitializeComponent();
+        }
+
+        private void KeyHook_VKCodeUp(int vkcode)
+        {
+            switch(vkcode)
+            {
+                case 179:
+                    musicControl(ControlCommand.PLAY);
+                    break;
+                case 178:
+                    musicControl(ControlCommand.STOP);
+                    break;
+                case 177:
+                    musicControl(ControlCommand.PREV);
+                    break;
+                case 176:
+                    musicControl(ControlCommand.NEXT);
+                    break;
+
+            }
         }
 
         private void ChromeBrowser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
@@ -240,16 +242,39 @@ namespace Deezer_Desktop
             }
         }
 
+        private void musicControl(ControlCommand command)
+        {
+            switch(command)
+            {
+                case ControlCommand.NEXT:
+                    chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.nextSong();");
+                    grabPlayingState();
+                    break;
+                case ControlCommand.PREV:
+                    chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.prevSong();");
+                    grabPlayingState();
+                    break;
+                case ControlCommand.PLAY:
+                    chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.togglePause();");
+                    grabPlayingState();
+                    break;
+                case ControlCommand.STOP:
+                    chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.seek(0); setTimeout(function() { dzPlayer.control.pause(); }, 5);");
+                    grabPlayingState();
+                    break;
+                
+
+            }
+        }
+
         private void skipSongToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            chromeBrowser.ExecuteScriptAsync(@"$('.control-next').click();");
-            grabPlayingState();
+            musicControl(ControlCommand.NEXT);
         }
 
         private void playPauseToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            chromeBrowser.ExecuteScriptAsync(@"$('.control-play').click();");
-            grabPlayingState();
+            musicControl(ControlCommand.PLAY);
         }
 
         private void exitProgramToolStripMenuItem_Click(object sender, EventArgs e)
@@ -261,8 +286,7 @@ namespace Deezer_Desktop
         {
             if(e.Button == MouseButtons.Left)
             {
-                chromeBrowser.ExecuteScriptAsync(@"$('.control-play').click();");
-                grabPlayingState();
+                musicControl(ControlCommand.PLAY);
             }
         }
     }
@@ -328,6 +352,11 @@ namespace Deezer_Desktop
                 FormClicked(form, EventArgs.Empty);
             }
         }
+    }
+
+    public enum ControlCommand
+    {
+        PLAY, NEXT, PREV, STOP
     }
 
     public class BoundObject
