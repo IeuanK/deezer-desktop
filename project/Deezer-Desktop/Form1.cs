@@ -66,6 +66,15 @@ namespace Deezer_Desktop
             }
         }
 
+        private void callFixState()
+        {
+            Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(250);
+                this.fixState();
+            });
+        }
+
         private void ChromeBrowser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
         {
             try
@@ -248,23 +257,18 @@ namespace Deezer_Desktop
             {
                 case ControlCommand.NEXT:
                     chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.nextSong();");
-                    grabPlayingState();
                     break;
                 case ControlCommand.PREV:
                     chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.prevSong();");
-                    grabPlayingState();
                     break;
                 case ControlCommand.PLAY:
                     chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.togglePause();");
-                    grabPlayingState();
                     break;
                 case ControlCommand.STOP:
                     chromeBrowser.ExecuteScriptAsync(@"dzPlayer.control.seek(0); setTimeout(function() { dzPlayer.control.pause(); }, 5);");
-                    grabPlayingState();
                     break;
-                
-
             }
+            callFixState();
         }
 
         private void skipSongToolStripMenuItem_Click(object sender, EventArgs e)
