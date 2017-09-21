@@ -32,12 +32,14 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.showHideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.skipSongToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playPauseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon_paused = new System.Windows.Forms.NotifyIcon(this.components);
             this.notifyIcon_playing = new System.Windows.Forms.NotifyIcon(this.components);
             this.notifyIcon_none = new System.Windows.Forms.NotifyIcon(this.components);
+            this.currentSongToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -54,30 +56,39 @@
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.currentSongToolStripMenuItem,
+            this.showHideToolStripMenuItem,
             this.skipSongToolStripMenuItem,
             this.playPauseToolStripMenuItem,
             this.exitProgramToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(142, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(153, 136);
+            // 
+            // showHideToolStripMenuItem
+            // 
+            this.showHideToolStripMenuItem.Name = "showHideToolStripMenuItem";
+            this.showHideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.showHideToolStripMenuItem.Text = "Show/Hide";
+            this.showHideToolStripMenuItem.Click += new System.EventHandler(this.showHideToolStripMenuItem_Click);
             // 
             // skipSongToolStripMenuItem
             // 
             this.skipSongToolStripMenuItem.Name = "skipSongToolStripMenuItem";
-            this.skipSongToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.skipSongToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.skipSongToolStripMenuItem.Text = "Skip song";
             this.skipSongToolStripMenuItem.Click += new System.EventHandler(this.skipSongToolStripMenuItem_Click);
             // 
             // playPauseToolStripMenuItem
             // 
             this.playPauseToolStripMenuItem.Name = "playPauseToolStripMenuItem";
-            this.playPauseToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.playPauseToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.playPauseToolStripMenuItem.Text = "Play/Pause";
             this.playPauseToolStripMenuItem.Click += new System.EventHandler(this.playPauseToolStripMenuItem_Click);
             // 
             // exitProgramToolStripMenuItem
             // 
             this.exitProgramToolStripMenuItem.Name = "exitProgramToolStripMenuItem";
-            this.exitProgramToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.exitProgramToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitProgramToolStripMenuItem.Text = "Exit Program";
             this.exitProgramToolStripMenuItem.Click += new System.EventHandler(this.exitProgramToolStripMenuItem_Click);
             // 
@@ -95,6 +106,13 @@
             // 
             this.notifyIcon_none.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon_none.Icon")));
             this.notifyIcon_none.Text = "notifyIcon2";
+            // 
+            // currentSongToolStripMenuItem
+            // 
+            this.currentSongToolStripMenuItem.Enabled = false;
+            this.currentSongToolStripMenuItem.Name = "currentSongToolStripMenuItem";
+            this.currentSongToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.currentSongToolStripMenuItem.Text = "Current Song";
             // 
             // Form1
             // 
@@ -127,6 +145,8 @@
         private System.Windows.Forms.NotifyIcon notifyIcon_playing;
         private System.Windows.Forms.ToolStripMenuItem exitProgramToolStripMenuItem;
         private System.Windows.Forms.NotifyIcon notifyIcon_none;
+        private System.Windows.Forms.ToolStripMenuItem showHideToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem currentSongToolStripMenuItem;
     }
 }
 

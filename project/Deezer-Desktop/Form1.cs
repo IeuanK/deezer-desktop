@@ -3,6 +3,7 @@ using CefSharp.WinForms;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,8 +18,14 @@ namespace Deezer_Desktop
         public bool initialized = false;
         public string initializedURL = "";
 
+        public string _CoverImage = "";
+        public string _Artist = "";
+        public string _Song = "";
+
         public Form1()
         {
+            InitializeComponent();
+
             CefSettings settings = new CefSettings();
             settings.CefCommandLineArgs["enable-system-flash"] = "1";
             settings.CachePath = Path.Combine(Path.GetTempPath(), "Deezer-Desktop");
@@ -42,8 +49,8 @@ namespace Deezer_Desktop
             mouseFilter.FormClicked += MouseFilter_FormClicked;
             Application.AddMessageFilter(mouseFilter);
 
-
             InitializeComponent();
+            currentSongToolStripMenuItem.Visible = false;
         }
 
         private void KeyHook_VKCodeUp(int vkcode)
@@ -66,11 +73,34 @@ namespace Deezer_Desktop
             }
         }
 
+        /*private void updateCurrentNumber()
+        {
+            Task t = Task.Run(() =>
+           {
+               this._CoverImage = JSEvalToString("$('.player-cover img').attr('src');");
+               this._Artist = JSEvalToString("dzPlayer.getArtistName()");
+               this._Song = JSEvalToString("dzPlayer.getSongTitle()");
+           });
+            Task.WaitAll(t);
+            updateCurrentSong(_Artist, _Song);
+        }
+
+        private void updateCurrentSong(string artist, string song)
+        {
+            if(InvokeRequired)
+            {
+                Invoke(new Action<string, string>(updateCurrentSong), artist, song);
+                return;
+            }
+
+            currentSongToolStripMenuItem.Text = artist + " - " + song;
+        }*/
+
         private void callFixState()
         {
             Task.Run(() =>
             {
-                System.Threading.Thread.Sleep(250);
+                System.Threading.Thread.Sleep(1000);
                 this.fixState();
             });
         }
@@ -87,6 +117,7 @@ namespace Deezer_Desktop
                     //chromeBrowser.ExecuteScriptAsync(@"$('.icon-play').on('click', function() { clickCallback.clickCallback(); });");
                     //chromeBrowser.ExecuteScriptAsync(@"$('.btn-play').on('click', function() { clickCallback.clickCallback(); });");
                     chromeBrowser.ExecuteScriptAsync(@"$(document).on('click', function() { clickCallback.clickCallback(); });");
+                    chromeBrowser.ExecuteScriptAsync(@"$('.control').on('click', function() { clickCallback.clickCallback(); });");
                     initialized = true;
                     initializedURL = chromeBrowser.Address;
                 }
@@ -137,6 +168,26 @@ namespace Deezer_Desktop
             }
         }
 
+        public string JSEvalToString(string code)
+        {
+            Task<JavascriptResponse> task = chromeBrowser.EvaluateScriptAsync(code);
+            string retVal = "";
+
+            task.ContinueWith(t =>
+            {
+                if (!t.IsFaulted)
+                {
+                    var response = t.Result;
+                    var jsResult = response.Success ? (response.Result ?? "null") : response.Message;
+
+                    retVal = jsResult.ToString();
+                }
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+
+            Task.WaitAny(task);
+            return retVal;
+        }
+
         public void grabPlayingState()
         {
             Task<JavascriptResponse> task = chromeBrowser.EvaluateScriptAsync("dzPlayer.isPlaying()");
@@ -168,6 +219,7 @@ namespace Deezer_Desktop
                     updateNotifyIcon();
                 }
             }, TaskScheduler.FromCurrentSynchronizationContext());
+            //updateCurrentNumber();
         }
 
         private void hotkey_HotkeyPressed(object sender, EventArgs e)
@@ -291,6 +343,25 @@ namespace Deezer_Desktop
             if(e.Button == MouseButtons.Left)
             {
                 musicControl(ControlCommand.PLAY);
+            }
+        }
+
+        private void showHideToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!this.Visible)
+            {
+                this.Show();
+                /*var bounds = this.MaximizedBounds;
+                this.Size = new Size(bounds.Width, bounds.Height);*/
+                this.WindowState = FormWindowState.Maximized;
+                this.TopMost = true;
+                this.BringToFront();
+
+                this.TopMost = false;
+            } else
+            {
+                //notifyIcon1.ShowBalloonTip(500);
+                this.Hide();
             }
         }
     }
